@@ -42,6 +42,9 @@ jobs:
                     TAG="${GITHUB_REF#refs/tags/}"
                 else
                     BRANCH_TAG=$(echo "${GITHUB_REF#refs/heads/}" | sed 's/[^a-zA-Z0-9._-]/-/g')
+                    if [[ $BRANCH_TAG == "main" ]]; then
+                      BRANCH_TAG="latest"
+                    fi
                     TAG="${BRANCH_TAG}"
                 fi
                 echo "TAG=${TAG}" >> $GITHUB_ENV

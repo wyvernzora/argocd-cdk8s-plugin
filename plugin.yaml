@@ -12,4 +12,3 @@ spec:
         command: ["cdk8s", "synth", "--stdout"]
     parameters:
         static: [ ]
-
