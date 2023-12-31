@@ -1,7 +1,7 @@
 FROM node:alpine
 
 # Set up dependencies and cdk8s things
-RUN apk add --no-cache jq yq
+RUN apk add --no-cache jq yq helm
 RUN npm install -g cdk8s-cli
 
 # Run as user 999 as required by ArgoCD
