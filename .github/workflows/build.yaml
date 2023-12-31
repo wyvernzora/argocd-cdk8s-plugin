@@ -38,22 +38,22 @@ jobs:
           - name: Determine the image tag
             shell: bash
             run: |
+                TAGS=()
                 if [[ $GITHUB_REF == refs/tags/* ]]; then
-                    TAG="${GITHUB_REF#refs/tags/}"
+                    TAGS+=("${GITHUB_REF#refs/tags/}", "latest")
                 else
                     BRANCH_TAG=$(echo "${GITHUB_REF#refs/heads/}" | sed 's/[^a-zA-Z0-9._-]/-/g')
-                    if [[ $BRANCH_TAG == "main" ]]; then
-                      BRANCH_TAG="latest"
-                    fi
-                    TAG="${BRANCH_TAG}"
+                    TAGS+=("${BRANCH_TAG}")
                 fi
-                echo "TAG=${TAG}" >> $GITHUB_ENV
+                TAG_LIST=$(IFS=, ; echo "${TAGS[*]}")
+                echo "TAG_LIST=${TAG_LIST}" >> $GITHUB_ENV
 
           - name: Build and publish
             uses: docker/build-push-action@v5
             with:
                 push: true
-                tags: ghcr.io/wyvernzora/argocd-cdk8s-plugin:${{ env.TAG }}
+                tags: ghcr.io/wyvernzora/argocd-cdk8s-plugin:${{ env.TAG_LIST }}
+                platforms: linux/amd64,linux/arm64
 
           - name: Clean up old versions
             uses: actions/delete-package-versions@v4
