@@ -30,29 +30,24 @@ jobs:
 
           - name: Login to ghcr.io
             uses: docker/login-action@v3
+            if: github.event_name != 'pull_request'
             with:
                 registry: ghcr.io
                 username: ${{ github.actor }}
                 password: ${{ secrets.GITHUB_TOKEN }}
         
-          - name: Determine the image tag
-            shell: bash
-            run: |
-                TAGS=()
-                if [[ $GITHUB_REF == refs/tags/* ]]; then
-                    TAGS+=("${GITHUB_REF#refs/tags/}", "latest")
-                else
-                    BRANCH_TAG=$(echo "${GITHUB_REF#refs/heads/}" | sed 's/[^a-zA-Z0-9._-]/-/g')
-                    TAGS+=("${BRANCH_TAG}")
-                fi
-                TAG_LIST=$(IFS=, ; echo "${TAGS[*]}")
-                echo "TAG_LIST=${TAG_LIST}" >> $GITHUB_ENV
+          - id: meta
+            name: Docker metadata
+            uses: docker/metadata-action@v5
+            with:
+                images: ghcr.io/wyvernzora/argocd-cdk8s-plugin
 
           - name: Build and publish
             uses: docker/build-push-action@v5
             with:
-                push: true
-                tags: ghcr.io/wyvernzora/argocd-cdk8s-plugin:${{ env.TAG_LIST }}
+                push: ${{ github.event_name != 'pull_request' }}
+                tags: ${{ steps.meta.outputs.tags }}
+                labels: ${{ steps.meta.outputs.labels }}
                 platforms: linux/amd64,linux/arm64
 
           - name: Clean up old versions
